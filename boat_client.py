@@ -80,7 +80,7 @@ def handle_data(port: serial.Serial, data: bytes):
 
 def send_boat_data(port: serial.Serial):
     """Sends a fake data to the desktop."""
-    center_point = (101.87513, 2.94575)
+    center_point = (101.87463, 2.94375)
 
     time_stamp = timestamp_pb2.Timestamp(seconds=int(time.time()))
     point = latlng_pb2.LatLng(
