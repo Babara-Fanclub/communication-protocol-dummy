@@ -7,6 +7,7 @@ import random
 import time
 
 import serial
+from google.protobuf.internal.decoder import _DecodeVarint
 from google.protobuf.message import Message, DecodeError
 
 from comm_proto import connection_pb2, data_pb2, latlng_pb2, timestamp_pb2
@@ -111,6 +112,8 @@ if __name__ == "__main__":
     logging.info("Connected to %s", port)
 
     next_send = time.time() + 10
+    BUF = b""
+    STATE = 0
     while True:
         if time.time() > next_send:
             logging.info("Sending Boat Data to Port")
@@ -119,16 +122,27 @@ if __name__ == "__main__":
 
         # TODO: Send data from the controller to the desktop
         try:
-            output = port.read_all()
+            BUF += port.read_all()
         except OSError:
             logging.info("Disconnected to the port")
             break
 
-        if output is None:
+        if STATE == 0:
+            try:
+                length, pos = _DecodeVarint(BUF, 0)
+                BUF = BUF[pos:]
+                STATE = 1
+                continue
+            except IndexError:
+                continue
+
+        if len(BUF) >= length and STATE == 1:
+            STATE = 0
+            logging.info("Received Data")
+            logging.debug("Data %s", BUF)
+            handle_data(port, BUF)
+            BUF = BUF[length:]
+
+        if BUF is None:
             print("Unable to read port", file=sys.stderr)
             sys.exit(1)
-
-        if len(output) > 0:
-            logging.info("Received Data")
-            logging.debug("Data %s", output)
-            handle_data(port, output)
