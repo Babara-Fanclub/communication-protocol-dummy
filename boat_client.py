@@ -139,8 +139,8 @@ if __name__ == "__main__":
         if len(BUF) >= length and STATE == 1:
             STATE = 0
             logging.info("Received Data")
-            logging.debug("Data %s", BUF)
-            handle_data(port, BUF)
+            logging.debug("Data %s", BUF[:length])
+            handle_data(port, BUF[:length])
             BUF = BUF[length:]
 
         if BUF is None:
