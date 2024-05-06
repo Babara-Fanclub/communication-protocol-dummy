@@ -155,8 +155,11 @@ if __name__ == "__main__":
             STATE = 0
             logging.info("Received Data")
             logging.debug("Data %s", BUF[:length])
-            handle_data(port, BUF[:length])
-            BUF = BUF[length:]
+            packet_type = handle_data(port, BUF[:length])
+            if packet_type is None:
+                BUF = []
+            else:
+                BUF = BUF[length:]
 
         if BUF is None:
             print("Unable to read port", file=sys.stderr)
