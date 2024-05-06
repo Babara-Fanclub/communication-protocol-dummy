@@ -7,7 +7,9 @@ import random
 import time
 
 import serial
+# https://www.datadoghq.com/blog/engineering/protobuf-parsing-in-python/
 from google.protobuf.internal.decoder import _DecodeVarint
+from google.protobuf.internal.encoder import _VarintBytes
 from google.protobuf.message import Message, DecodeError
 
 from comm_proto import connection_pb2, data_pb2, latlng_pb2, timestamp_pb2
@@ -21,7 +23,7 @@ def send_data(port: serial.Serial, packet_type: PacketType, message: Message):
         version="0.1.0", type=packet_type, data=message.SerializeToString()
     )
     try:
-        port.write(packet.SerializeToString())
+        port.write(_VarintBytes(packet.ByteSize()) + packet.SerializeToString())
     except OSError:
         logging.info("Disconnected to the port")
         sys.exit(0)
